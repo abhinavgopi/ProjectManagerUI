@@ -1,0 +1,218 @@
+<div class="container">
+  <div class="page-header">
+    <h3>Add Task</h3>
+  </div>
+  <div class="form-group row">
+    <label class="col-sm-2">Project</label>
+    <div class="col-sm-4">
+      <select class="form-control" readonly="true" [(ngModel)]="Task.ProjectId">
+        <option [ngValue]="project.ProjectId" *ngFor="let project of ProjectData">
+          {{project.ProjectName}}
+        </option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <input type="button" class="btn" value="Search" data-toggle="modal" data-target="#projectModal">
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-sm-2">Task</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control" [(ngModel)]="Task.TaskName" #taskname="ngModel" required>
+      <div *ngIf="taskname.invalid">
+        <span style="color:red">Task Name is Required.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <div class="col-sm-2">
+      <label>Parent Task</label>
+    </div>
+    <div class="col-sm-2">
+      <input type="checkbox" id="ckhParent" style="width:20px" class="form-control" [(ngModel)]="Task.IsParent" (change)="OnCheck($event)">
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-sm-2">Priority</label>
+    <div class="col-sm-6">
+      <input type="range" class="form-control" [(ngModel)]="Task.Priority" value="0" min="1" max="30" step="1" disabled="{{isDisabled}}">
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-sm-2">Parent Task</label>
+    <div class="col-sm-4">
+      <select [(ngModel)]="Task.ParentTaskId" readonly="true" class="form-control" disabled="{{isDisabled}}">
+        <option [value]="item.TaskId" *ngFor="let item of ParentData">
+          {{item.TaskName}}
+        </option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <input type="button" class="btn" value="Search" data-toggle="modal" data-target="#taskModal">
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-sm-2">Start Date</label>
+    <div class="col-sm-6">
+      <input type="date" class="form-control" [(ngModel)]="Task.StartDate" (click)="DateValidation()" disabled="{{isDisabled}}">
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-sm-2">End Date</label>
+    <div class="col-sm-6">
+      <input type="date" class="form-control" [(ngModel)]="Task.EndDate" (click)="DateValidation()" disabled="{{isDisabled}}">
+      <div [(ngModel)]="isValidEndDate" *ngIf="isValidEndDate == 'Invalid'">
+        <span style="color:red">Start date must be less than End date.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-sm-2">User</label>
+    <div class="col-sm-4">
+      <select class="form-control" #user="ngModel" [(ngModel)]="Task.UserId" disabled="{{isDisabled}}" readonly="true">
+        <option [ngValue]="user.UserId" *ngFor="let user of UserData">
+          {{user.FirstName}}
+        </option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <input type="button" class="btn" value="Search" data-toggle="modal" data-target="#userModal">
+    </div>
+  </div>
+
+  <div class="row" style="padding:3px;text-align:center">
+    <input type="button" class="btn btn-default" [disabled]="taskname.invalid || Validation()" value="Add" (click)="AddTask()">
+    <input type="reset" class="btn btn-default" (click)="Reset()" value="Reset">
+  </div>
+
+  <!-- Model User-->
+
+  <div id="userModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Select a user</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group row">
+            <div class="col-md-4">
+              <input type="text" calss="form-control" [(ngModel)]="firstNameSearch" placeholder="Enter Fist Name to search...">
+            </div>
+            <table class="table">
+              <thead>
+                <td>First Name</td>
+                <td>Last Name</td>
+                <td>Employee Id</td>
+                <td></td>
+              </thead>
+              <tbody *ngFor="let user of UserData | userSearch : firstNameSearch">
+                <tr *ngIf="user">
+                  <td> {{ user.FirstName }}</td>
+                  <td> {{ user.LastName }}</td>
+                  <td> {{ user.EmployeeId }}</td>
+                  <td>
+                    <input type="button" calss="btn btn-default" value="Select" data-dismiss="modal" (click)="SelectUser(user.UserId)">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Project -->
+
+  <div id="projectModal" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Select a project</h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-group row">
+              <div class="col-md-4">
+                <input type="text" calss="form-control" [(ngModel)]="firstNameSearch" placeholder="Enter Project Name to search...">
+              </div>
+              <table class="table">
+                <thead>
+                  <td>Project Name</td>
+                  <td>Start Date</td>
+                  <td>End Date</td>
+                  <td></td>
+                </thead>
+                <tbody *ngFor="let project of ProjectData | projectSearch : firstNameSearch">
+                  <tr *ngIf="project">
+                    <td> {{ project.ProjectName }}</td>
+                    <td> {{ project.StartDate }}</td>
+                    <td> {{ project.EndDate }}</td>
+                    <td>
+                      <input type="button" calss="btn btn-default" value="Select" data-dismiss="modal" (click)="SelectProject(project.ProjectId)">
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<!-- Modal Parent Task -->
+
+  <div id="taskModal" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Select a Parent Task</h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-group row">
+              <div class="col-md-4">
+                <input type="text" calss="form-control" [(ngModel)]="taskNameSearch" placeholder="Enter Task Name to search...">
+              </div>
+              <table class="table">
+                <thead>
+                  <td>Task Name</td>
+                  <td>Start Date</td>
+                  <td>End Date</td>
+                  <td></td>
+                </thead>
+                <tbody *ngFor="let task of ParentData | taskSearch : taskNameSearch">
+                  <tr *ngIf="task">
+                    <td> {{ task.TaskName }}</td>
+                    <td> {{ task.StartDate }}</td>
+                    <td> {{ task.EndDate }}</td>
+                    <td>
+                      <input type="button" calss="btn btn-default" value="Select" data-dismiss="modal" (click)="SelectParentTask(task.TaskId)">
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+</div>

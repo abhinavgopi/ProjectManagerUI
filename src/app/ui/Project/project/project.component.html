@@ -1,0 +1,159 @@
+<div class="container">
+  <div class="page-header">
+    <h3>Add Project</h3>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-sm-2">Project Name</label>
+    <div class="col-sm-3">
+      <input type="text" class="from-control" style="margin-left:35px" #projectname="ngModel" [(ngModel)]="Project.ProjectName"
+        required/>
+    </div>
+    <div class="col-sm-7" *ngIf="projectname.invalid">
+      <span style="color:red">Please enter project name.</span>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <div calss="col-sm-2">
+      <input type="checkbox" id="chkBox" class="from-control" (change)="OnSelect($event)" />
+      <label>Set Start and End Date </label>
+    </div>
+    <div class="col-sm-3">
+      <input type="date" style="width:auto;" class="form-control" [(ngModel)]="Project.StartDate" disabled="{{isDisabled}}" (change)="ValidateStartEndDate();">
+    </div>
+    <div class="col-sm-3">
+      <input type="date" style="width:auto;" class="form-control" [(ngModel)]="Project.EndDate" disabled="{{isDisabled}}" (change)="ValidateStartEndDate()">
+    </div>
+    <div class="col-sm-4" [(ngModel)]="isValidEndDate"*ngIf="isValidEndDate == 'Invalid'">
+      <span style="color:red">Start Date must be less than End Date</span>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <div class="col-sm-2">
+      <label>Priority</label>
+    </div>
+    <div class="col-sm-6">
+      <input type="range" class="form-control" [(ngModel)]="Project.Priority" Min="0" Max="30" step="1" value="0" />
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <div class="col-sm-2">
+      <label>Manager</label>
+    </div>
+    <div class="col-sm-2">
+      <select class="form-control" #manager="ngModel" readonly="true" required [(ngModel)]="Project.UserId">
+        <option [ngValue]="user.UserId" *ngFor="let user of Users">
+          {{user.FirstName}}
+        </option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <input type="button" class="btn" value="Search" data-toggle="modal" data-target="#userModal">
+    </div>
+    <div class="col-sm-4" *ngIf="manager.invalid">
+      <span style="color:red">Manager is Required.</span>
+    </div>
+  </div>
+
+  <div calss="form-group row">
+    <div class="col-sm-4"></div>
+    <div class="col-sm-8">
+      <input type="button" [disabled]="projectname.invalid || manager.invalid || ValidateDate()" value="{{ AddorUpdate }}" class="btn btn-space"
+        (click)="AddOrUpdateProject()">
+      <input type="button" (click)="Reset();" value="Reset" class="btn btn-space">
+    </div>
+  </div>
+</div>
+<hr>
+<div class="container">
+  <div class="form-group row">
+    <div class="col-sm-8">
+      <input type="text" class="form-control" [(ngModel)]="projectNameSearch" placeholder="Enter the project name to search...">
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <span class="btn-space" style="margin-right:10px">Sort by:</span>
+    <input type="button" class="btn btn-space btn-sm" value="Start Date" (click)="SortByStartDate()">
+    <input type="button" class="btn btn-space btn-sm" value="End Date" (click)="SortByEndDate()">
+    <input type="button" class="btn btn-space btn-sm" value="Priority" (click)="SortByPriority()">
+    <input type="button" class="btn btn-space btn-sm" value="Completed" (click)="SortByCompleted()">
+  </div>
+  <div class="row">
+    <div class="col-sm-10">
+      <div class="list-group" style="margin-top:10px;">
+        <div class="list-group-item" *ngFor="let project of ProjectData | projectSearch : projectNameSearch">
+          <div class="row">
+            <div class="col-sm-10">
+              <div class="row">
+                <div class="col-sm-7">Project : {{project.ProjectName}}</div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-1">Priority</div>
+              </div>
+              <div class="row">
+                <div class="col-sm-5">No of Tasks: {{project.TotalTask}}</div>
+                <div class="col-sm-5">Completed : {{project.CompletedTask}}</div>
+                <div class="col-sm-2">{{project.Priority}}</div>
+              </div>
+              <div class="row">
+                <div class="col-sm-5"> Start Date: {{project.StartDate | date : "MM/dd/yyyy"}}</div>
+                <div class="col-sm-6"> End Date: {{project.EndDate | date : "MM/dd/yyyy"}}</div>
+              </div>
+            </div>
+            <div class="col-sm-1">
+              <div class="row">
+                <input type="button" class="btn btn-sm" value="Update" (click)="UpdateProject(project.ProjectId)">
+              </div>
+              <div class="row" style="margin-top:5px">
+                <input type="button" class="btn btn-sm" value="Suspend" (click)="DeleteProject(project.ProjectId)">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model -->
+
+  <div id="userModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Select a user</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group row">
+            <div class="col-md-4">
+              <input type="text" calss="form-control" [(ngModel)]="firstNameSearch" placeholder="Enter Fist Name to search...">
+            </div>
+            <table class="table">
+              <thead>
+                <td>First Name</td>
+                <td>Last Name</td>
+                <td>Employee Id</td>
+                <td></td>
+              </thead>
+              <tbody *ngFor="let user of Users | userSearch : firstNameSearch">
+                <tr *ngIf="user">
+                  <td> {{ user.FirstName }}</td>
+                  <td> {{ user.LastName }}</td>
+                  <td> {{ user.EmployeeId }}</td>
+                  <td>
+                    <input type="button" calss="btn btn-default" value="Select" data-dismiss="modal" (click)="SelectManager(user.UserId)">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
