@@ -4,8 +4,8 @@ export class Task {
     TaskName: string;
     Priority: number;
     ParentTaskId: number;
-    StartDate: string;
-    EndDate: string;
+    StartDate: Date;
+    EndDate: Date;
     Status: string;
     isEnded: boolean;
 }
